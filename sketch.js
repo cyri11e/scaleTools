@@ -6,7 +6,7 @@ function setup() {
     // Créer une gamme visuelle au hasard
     const randomScaleName = random(SCALES_NAMES);
     const randomMode = random(MODES[SCALES_NAMES.indexOf(randomScaleName)]);
-    const scale = new Scale(randomScaleName, randomMode);
+    const scale = new Scale(randomScaleName, randomMode, 'C');
     visualScale = new vScale(scale, 50, 50, 300, 100);
 }
 

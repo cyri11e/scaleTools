@@ -22,7 +22,7 @@ class Bubble {
         fill(255);
         noStroke();
         textAlign(CENTER, CENTER);
-        text(this.labels[this.labelType], this.x, this.y); // Utiliser labelType pour choisir le label
+        text(this.labels[this.labelType] || '', this.x, this.y); // Utiliser labelType pour choisir le label
         pop();
     }
 
@@ -60,7 +60,11 @@ class vScale {
         let notes = [];
         let radius = this.height / 4; // Initialiser les diamètres des bulles à la moitié de la hauteur du rectangle
         for (let i = 0; i < 12; i++) {
-            let labels = [this.scale.labels.degrees[i], this.scale.labels.intervals[i]]; // Ajouter plusieurs labels
+            let labels = [
+                this.scale.labels.degrees[i] || '', 
+                this.scale.labels.intervals[i] || '', 
+                this.scale.labels.notes[i] || ''
+            ]; // Assurez-vous que les 3 labels sont inclus et non null
             let isInScale = this.scale.intervals.semitones.includes(i);
             let x = this.x + radius + i * (2 * radius);
             let y = this.y + this.height / 2;
@@ -74,7 +78,11 @@ class vScale {
         for (let i = 0; i < 12; i++) {
             let x = this.x + radius + i * (2 * radius);
             let y = this.y + this.height / 2;
-            let labels = [this.scale.labels.degrees[i], this.scale.labels.intervals[i]]; // Ajouter plusieurs labels
+            let labels = [
+                this.scale.labels.degrees[i] || '', 
+                this.scale.labels.intervals[i] || '', 
+                this.scale.labels.notes[i] || ''
+            ]; // Assurez-vous que les 3 labels sont inclus et non null
             let isInScale = this.scale.intervals.semitones.includes(i);
             this.notes[i].x = x;
             this.notes[i].y = y;
@@ -127,11 +135,11 @@ class vScale {
         textAlign(CENTER, CENTER); // Centrer le texte
         colorMode(HSB, 12); // Utiliser le mode de couleur HSB avec une plage de teinte de 0 à 12
         for (let i = 0; i < 12; i++) {
-            let interval = this.scale.labels.intervals[i];
+            let interval = this.scale.labels.intervals[i] || '';
             let x = radius + i * spacing; // Déplacer pour que le premier cercle touche le bord gauche du cadre
             let y = this.height / 2;
             let isInScale = this.scale.intervals.semitones.includes(i);
-            let bubble = new Bubble(x, y, radius, [interval, this.scale.labels.degrees[i]], i, isInScale, this.labelType); // Ajouter plusieurs labels
+            let bubble = new Bubble(x, y, radius, [interval, this.scale.labels.degrees[i] || '', this.scale.labels.notes[i] || ''], i, isInScale, this.labelType); // Ajouter plusieurs labels
             bubble.draw();
         }
         pop();
@@ -188,7 +196,7 @@ class vScale {
     }
 
     isMouseOver() {
-        return mouseX > this.x && mouseX < this.x + this.width && mouseY > this.y && mouseY < this.y + this.height;
+        return mouseX > this.x && mouseX < this.x + this.width && mouseY > this.y && mouseY < this.height;
     }
 
     isMouseOverMoveIcon() {

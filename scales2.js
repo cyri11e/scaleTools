@@ -2,12 +2,14 @@
 // <script src="const.js"></script> doit être ajouté dans index.html
 
 class Scale {
-    constructor(scaleName, mode = 1) {
+    constructor(scaleName, mode = 1, key = null) {
         this.name = scaleName;
         this.mode = mode;
         this.scaleType = SCALES_NAMES.indexOf(scaleName); // Définir scaleType
+        this.key = key;
         
-        this.createFullScale(scaleName, mode);
+        this.createFullScale(scaleName, mode, key);
+
     }
 
     createFullScale(scaleName, mode) {
@@ -17,7 +19,14 @@ class Scale {
             diatonic,
             degrees
         };
+        if (this.key) {
+            this.intervals.notes = this.getNotesFromTonic(this.key); // Ajouter les notes dans intervals
+        }
         this.labels = this.createLabels();
+        if (this.key) {
+            this.intervals.notes = this.getNotesFromTonic(this.key); // Assigner les notes à partir de la tonique
+            this.labels.notes = this.createFullNotes(); // Remplir le tableau notes de labels
+        }
     }
 
     getNotes() {
@@ -55,6 +64,15 @@ class Scale {
         return notes;
     }
 
+    createFullNotes() {
+        let notes = Array(12).fill(null);
+        this.intervals.semitones.forEach((semitone, index) => {
+            notes[semitone] = this.intervals.notes[index];
+        });
+        //this.fillGaps(notes, 'note');
+        return notes;
+    }
+
     modifyNote(noteIndex, alteration) {
         if (noteIndex < 0 || noteIndex >= this.intervals.semitones.length) {
             throw new Error('Note non trouvée dans le tableau des demi-tons');
@@ -85,6 +103,9 @@ class Scale {
         this.intervals.diatonic = this.convertToDiatonic(semitones);
         this.intervals.degrees = this.convertToDegrees(semitones);
         this.labels = this.createLabels();
+        if (this.intervals.notes) {
+            this.labels.notes = this.createFullNotes(); // Remplir le tableau notes de labels
+        }
 
         // Détecter la gamme et le mode
         const detectedScale = this.detectScale(semitones);
@@ -130,18 +151,24 @@ class Scale {
     createLabels() {
         let intervalLabels = Array(12).fill(null);
         let degreeLabels = Array(12).fill(null);
+        let noteLabels = Array(12).fill(null);
 
         this.intervals.semitones.forEach((semitone, index) => {
             intervalLabels[semitone] = this.intervals.diatonic[index];
             degreeLabels[semitone] = this.intervals.degrees[index];
+            if (this.intervals.notes) {
+                noteLabels[semitone] = this.intervals.notes[index];
+            }
         });
 
         this.fillGaps(intervalLabels, 'interval');
         this.fillGaps(degreeLabels, 'degree');
+        this.fillGaps(noteLabels, 'note');
 
         return {
             intervals: intervalLabels,
-            degrees: degreeLabels
+            degrees: degreeLabels,
+            notes: noteLabels
         };
     }
 
@@ -150,6 +177,8 @@ class Scale {
             if (labels[i] === null) {
                 if (labelType === 'degree') {
                     labels[i] = this.getDegreeFromInterval(i);
+                } else if (labelType === 'note') {
+                    labels[i] = Scale.getNoteFromInterval(i); // Utiliser Scale.getNoteFromInterval
                 } else {
                     labels[i] = this.getLabelWithPriority(i, labelType);
                 }
@@ -174,8 +203,10 @@ class Scale {
     getLabel(degree, labelType, priorities) {
         if (labelType === 'degree') {
             return Object.keys(FULL_DEGREES).find(key => FULL_DEGREES[key] === degree && priorities.some(p => key.includes(p))) || '';
-        } else {
+        } else if (labelType === 'interval') {
             return Object.keys(FULL_INTERVALS).find(key => FULL_INTERVALS[key] === degree && priorities.some(p => key.includes(p))) || '';
+        } else if (labelType === 'note') {  
+            return Object.keys(FULL_NOTES).find(key => FULL_NOTES[key] === degree && priorities.some(p => key.includes(p))) || '';
         }
     }
 
