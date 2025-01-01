@@ -248,6 +248,8 @@ class Scale {
                 degree = '#' + degree;
             } else if (degree === '4' && intervalValue === FULL_INTERVALS['4A']) {
                 degree = '#4'; // Cas spécial du Lydian
+            } else if (degree === '4' && intervalValue === FULL_INTERVALS['4d']) {
+                degree = 'b4'; 
             }
             diatonicDegrees.push(degree);
         }

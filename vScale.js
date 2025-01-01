@@ -1,11 +1,13 @@
 class Bubble {
-    constructor(x, y, radius, label, hue, isInScale) {
+    constructor(x, y, radius, labels, hue, isInScale, labelType) {
         this.x = x;
         this.y = y;
         this.radius = radius;
-        this.label = label;
+        this.labels = labels; // labels est maintenant un tableau
+        this.currentLabelIndex = 0; // Index du label actuel
         this.hue = hue;
         this.isInScale = isInScale;
+        this.labelType = labelType; // Ajouter la propriété labelType
     }
 
     draw() {
@@ -20,8 +22,16 @@ class Bubble {
         fill(255);
         noStroke();
         textAlign(CENTER, CENTER);
-        text(this.label, this.x, this.y); // Centrer le texte dans le cercle
+        text(this.labels[this.labelType], this.x, this.y); // Utiliser labelType pour choisir le label
         pop();
+    }
+
+    cycleLabel() {
+        this.currentLabelIndex = (this.currentLabelIndex + 1) % this.labels.length;
+    }
+
+    isMouseOver() {
+        return dist(mouseX, mouseY, this.x, this.y) < this.radius;
     }
 }
 
@@ -40,7 +50,7 @@ class vScale {
         this.offsetX = 0;
         this.offsetY = 0;
         this.aspectRatio = width / height;
-        this.labelType = LABEL_TYPES[0]; // Par défaut, afficher les intervalles
+        this.labelType = 0; // Par défaut, afficher les intervalles
         this.notes = this.createNotes(); // Initialiser les notes
         this.isLabelHovered = false;
         this.isModeHovered = false;
@@ -50,11 +60,11 @@ class vScale {
         let notes = [];
         let radius = this.height / 4; // Initialiser les diamètres des bulles à la moitié de la hauteur du rectangle
         for (let i = 0; i < 12; i++) {
-            let label = this.labelType === 'degree' ? this.scale.labels.degrees[i] : this.scale.labels.intervals[i];
+            let labels = [this.scale.labels.degrees[i], this.scale.labels.intervals[i]]; // Ajouter plusieurs labels
             let isInScale = this.scale.intervals.semitones.includes(i);
             let x = this.x + radius + i * (2 * radius);
             let y = this.y + this.height / 2;
-            notes.push(new Bubble(x, y, radius, label, i, isInScale));
+            notes.push(new Bubble(x, y, radius, labels, i, isInScale, this.labelType));
         }
         return notes;
     }
@@ -64,13 +74,14 @@ class vScale {
         for (let i = 0; i < 12; i++) {
             let x = this.x + radius + i * (2 * radius);
             let y = this.y + this.height / 2;
-            let label = this.labelType === 'degree' ? this.scale.labels.degrees[i] : this.scale.labels.intervals[i];
+            let labels = [this.scale.labels.degrees[i], this.scale.labels.intervals[i]]; // Ajouter plusieurs labels
             let isInScale = this.scale.intervals.semitones.includes(i);
             this.notes[i].x = x;
             this.notes[i].y = y;
             this.notes[i].radius = radius;
-            this.notes[i].label = label;
+            this.notes[i].labels = labels;
             this.notes[i].isInScale = isInScale;
+            this.notes[i].labelType = this.labelType; // Mettre à jour labelType
         }
     }
 
@@ -120,7 +131,7 @@ class vScale {
             let x = radius + i * spacing; // Déplacer pour que le premier cercle touche le bord gauche du cadre
             let y = this.height / 2;
             let isInScale = this.scale.intervals.semitones.includes(i);
-            let bubble = new Bubble(x, y, radius, interval, i, isInScale);
+            let bubble = new Bubble(x, y, radius, [interval, this.scale.labels.degrees[i]], i, isInScale, this.labelType); // Ajouter plusieurs labels
             bubble.draw();
         }
         pop();
@@ -242,7 +253,7 @@ class vScale {
             const draggedNote = this.notes[this.draggedNoteIndex];
             const alteration = mouseX > this.dragStartX ? 1 : -1;
             const semitoneIndex = this.scale.intervals.semitones.indexOf(draggedNote.hue);
-            if (semitoneIndex !== -1) {
+            if (semitoneIndex !== -1 && semitoneIndex !== 0) { // Ne pas appeler modifyNote pour la tonique
                 this.scale.modifyNote(semitoneIndex, alteration); // Utiliser l'indice en demi-ton correspondant
                 this.updateNotes();
                 console.log(`Note released: Index ${this.draggedNoteIndex}`); // Log l'indice de la note relâchée
@@ -275,6 +286,10 @@ class vScale {
             console.log("Note clicked in handleMousePressed"); // Debug
             this.startDraggingNote();
         }
+        if (this.notes[0].isMouseOver()) {
+            console.log("Tonic clicked in handleMousePressed"); // Debug
+            this.cycleLabelType(); // Cycler les labels de la tonique et de toutes les bulles
+        }
     }
 
     handleMouseReleased() {
@@ -282,6 +297,12 @@ class vScale {
         this.stopDragging();
         this.stopResizing();
         this.stopDraggingNote();
+    }
+
+    cycleLabelType() {
+        this.labelType = (this.labelType + 1) % this.notes[0].labels.length;
+        this.notes.forEach(note => note.labelType = this.labelType);
+        this.updateNotes();
     }
 
     getScaleIndex() {
