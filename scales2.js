@@ -5,6 +5,12 @@ class Scale {
     constructor(scaleName, mode = 1) {
         this.name = scaleName;
         this.mode = mode;
+        this.scaleType = SCALES_NAMES.indexOf(scaleName); // Définir scaleType
+        
+        this.createFullScale(scaleName, mode);
+    }
+
+    createFullScale(scaleName, mode) {
         const [semitones, diatonic, degrees] = this.createScale(scaleName, mode);
         this.intervals = {
             semitones,
@@ -49,17 +55,17 @@ class Scale {
         return notes;
     }
 
-    modifyNote(noteValue, alteration) {
-        const noteIndex = this.intervals.semitones.indexOf(noteValue);
-        if (noteIndex === -1) {
+    modifyNote(noteIndex, alteration) {
+        if (noteIndex < 0 || noteIndex >= this.intervals.semitones.length) {
             throw new Error('Note non trouvée dans le tableau des demi-tons');
         }
 
-        const newSemitoneValue = this.intervals.semitones[noteIndex] + alteration;
+        const newSemitoneValue = (this.intervals.semitones[noteIndex] + alteration + 12) % 12;
 
         // Vérifier si le nouveau degré existe déjà
         if (this.intervals.semitones.includes(newSemitoneValue)) {
-            throw new Error('Le nouveau degré existe déjà');
+            console.warn('Le nouveau degré existe déjà, modification ignorée');
+            return;
         }
 
         // Modifier le tableau des demi-tons
@@ -74,7 +80,7 @@ class Scale {
         this.updateScale(transposedSemitones);
     }
 
-    updateScale(semitones) {
+    updateScale(semitones = this.intervals.semitones) {
         this.intervals.semitones = semitones;
         this.intervals.diatonic = this.convertToDiatonic(semitones);
         this.intervals.degrees = this.convertToDegrees(semitones);
@@ -84,6 +90,7 @@ class Scale {
         const detectedScale = this.detectScale(semitones);
         this.name = detectedScale.name;
         this.mode = detectedScale.mode;
+        this.scaleType = SCALES_NAMES.indexOf(this.name); // Mettre à jour scaleType
     }
 
     detectScale(semitones) {
