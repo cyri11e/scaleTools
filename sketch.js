@@ -6,7 +6,14 @@ function setup() {
     // Créer une gamme visuelle au hasard
     const randomScaleName = random(SCALES_NAMES);
     const randomMode = random(MODES[SCALES_NAMES.indexOf(randomScaleName)]);
-    const scale = new Scale(randomScaleName, randomMode, 'C');
+    let randomTonic = random(Object.keys(FULL_NOTES)); // Tonique aléatoire
+
+    // Vérifier que la tonique n'est pas un double bémol ou double dièse
+    while (randomTonic.includes('bb') || randomTonic.includes('x')) {
+        randomTonic = random(Object.keys(FULL_NOTES));
+    }
+
+    const scale = new Scale(randomScaleName, randomMode, randomTonic);
     visualScale = new vScale(scale, 50, 50, 300, 100);
 }
 

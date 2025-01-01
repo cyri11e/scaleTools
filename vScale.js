@@ -96,15 +96,15 @@ class vScale {
     draw() {
         push();
         translate(this.x, this.y); // Déplacer le système de coordonnées à l'emplacement de l'objet vScale
-        // Afficher le nom de la gamme
+        // Afficher le nom de la gamme avec la tonique
         textSize(16 * (this.width / 200));
         fill(255); // Texte en blanc
         noStroke();
-        if (this.scale.name) {
-            text(this.scale.name, 10 * (this.width / 200), 20 * (this.height / 100));
+        if (this.scale.name && this.scale.key) {
+            text(`${this.scale.key} ${this.scale.name}`, 10 * (this.width / 200), 20 * (this.height / 100));
             if (this.isLabelHovered) {
                 stroke(255);
-                line(10 * (this.width / 200), 22 * (this.height / 100), 10 * (this.width / 200) + textWidth(this.scale.name), 22 * (this.height / 100));
+                line(10 * (this.width / 200), 22 * (this.height / 100), 10 * (this.width / 200) + textWidth(`${this.scale.key} ${this.scale.name}`), 22 * (this.height / 100));
             }
         }
 
@@ -210,7 +210,7 @@ class vScale {
     isMouseOverLabel() {
         const labelX = this.x + 10 * (this.width / 200);
         const labelY = this.y + 20 * (this.height / 100);
-        const labelWidth = textWidth(this.scale.name);
+        const labelWidth = textWidth(`${this.scale.key} ${this.scale.name}`);
         const labelHeight = textAscent() + textDescent(); // Utiliser textHeight pour la zone sensible
         return mouseX > labelX && mouseX < labelX + labelWidth &&
                mouseY > labelY - labelHeight && mouseY < labelY + labelHeight;
@@ -329,7 +329,7 @@ class vScale {
         this.scale.mode = MODES[nextIndex][0]; // Passer au premier mode de la nouvelle gamme
         this.scale.createFullScale(this.scale.name, this.scale.mode);
         this.updateNotes(); // Mettre à jour les notes
-        console.log(`Scale changed to: ${this.scale.name}, Mode: ${this.scale.mode}, ScaleType: ${this.scale.scaleType}`); // Debug
+        console.log(`Scale changed to: ${this.scale.key} ${this.scale.name}, Mode: ${this.scale.mode}, ScaleType: ${this.scale.scaleType}`); // Debug
     }
 
     cycleMode() {
