@@ -1,10 +1,11 @@
 class Label {
-    constructor(text, x, y, size, align = LEFT) {
+    constructor(text, x, y, size, align = LEFT, labelType = 'scale') {
         this.text = text;
         this.x = x;
         this.y = y;
         this.size = size;
         this.align = align;
+        this.labelType = labelType; // Ajouter la propriété labelType
     }
 
     isHovered() {
@@ -69,13 +70,13 @@ class vScale2 {
         const labelSize = this.height / 6;
         if (this.circleMode) {
             this.labels = [
-                new Label(this.scale.name, this.x + this.width / 2, this.y + this.height / 2 - labelSize, labelSize, CENTER),
-                new Label(this.scale.modeName, this.x + this.width / 2, this.y + this.height / 2, labelSize, CENTER)
+                new Label(this.scale.name, this.x + this.width / 2, this.y + this.height / 2 - labelSize, labelSize, CENTER, 'scale'),
+                new Label(this.scale.modeName, this.x + this.width / 2, this.y + this.height / 2, labelSize, CENTER, 'mode')
             ];
         } else {
             this.labels = [
-                new Label(this.scale.name, this.x + 5, this.y + 5, labelSize, LEFT),
-                new Label(this.scale.modeName, this.x + this.width - 5, this.y + 5, labelSize, RIGHT)
+                new Label(this.scale.name, this.x + 5, this.y + 5, labelSize, LEFT, 'scale'),
+                new Label(this.scale.modeName, this.x + this.width - 5, this.y + 5, labelSize, RIGHT, 'mode')
             ];
         }
     }
@@ -230,10 +231,10 @@ class vScale2 {
         console.log('Clic');
         this.labels.forEach(label => {
             if (label.isHovered()) {
-                if (label.text === this.scale.name) {
+                if (label.labelType === 'scale') {
                     console.log('Changement de gamme');
                     this.nextScale();
-                } else if (label.text === this.scale.modeName) {
+                } else if (label.labelType === 'mode') {
                     console.log('Changement de mode');
                     this.nextMode();
                 }
