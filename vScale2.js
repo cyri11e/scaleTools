@@ -59,6 +59,8 @@ class vScale2 {
         this.labels = [];
         this.bubbles = [];
         this.circleMode = circleMode; // Assurez-vous que circleMode est bien défini ici
+        this.bubbleAnimation = new CustomAnimation(500); // Utiliser CustomAnimation pour les bulles
+        this.labelAnimation = new CustomAnimation(500); // Utiliser CustomAnimation pour les labels
         this.createLabels();
         this.createBubbles();
     }
@@ -130,6 +132,8 @@ class vScale2 {
             this.createLabels(); // Mettre à jour les labels lors du redimensionnement
             this.createBubbles(); // Mettre à jour les bulles lors du redimensionnement
         }
+        this.bubbleAnimation.update(); // Mettre à jour l'animation des bulles
+        this.labelAnimation.update(); // Mettre à jour l'animation des labels
     }
 
     draw() {    
@@ -245,9 +249,39 @@ class vScale2 {
     }
 
     toggleCircleMode() {
+        const startBubblePositions = this.bubbles.map(bubble => ({ x: bubble.x, y: bubble.y }));
+        const startLabelPositions = this.labels.map(label => ({ x: label.x, y: label.y, align: label.align }));
         this.circleMode = !this.circleMode;
-        this.createLabels();
-        this.createBubbles();
+        const endBubblePositions = this.bubbles.map((bubble, i) => {
+            const { bubbleX, bubbleY } = this.getCoordinates(this.width / 6, i);
+            return { x: bubbleX, y: bubbleY };
+        });
+        const endLabelPositions = this.circleMode ? [
+            { x: this.x + this.width / 2, y: this.y + this.height / 2 - this.height / 6, align: CENTER },
+            { x: this.x + this.width / 2, y: this.y + this.height / 2, align: CENTER }
+        ] : [
+            { x: this.x + 5, y: this.y + 5, align: LEFT },
+            { x: this.x + this.width - 5, y: this.y + 5, align: RIGHT }
+        ];
+
+        this.bubbleAnimation.start(startBubblePositions, endBubblePositions, (currentPositions) => {
+            push();
+            this.bubbles.forEach((bubble, i) => {
+                bubble.x = currentPositions[i].x;
+                bubble.y = currentPositions[i].y;
+            });
+            pop();
+        });
+
+        this.labelAnimation.start(startLabelPositions, endLabelPositions, (currentLabelPositions) => {
+            push();
+            this.labels.forEach((label, i) => {
+                label.x = currentLabelPositions[i].x;
+                label.y = currentLabelPositions[i].y;
+                label.align = currentLabelPositions[i].align;
+            });
+            pop();
+        });
     }
 
     nextScale() {
