@@ -13,8 +13,7 @@ function setup() {
         randomTonic = random(Object.keys(FULL_NOTES));
     }
 
-    const scale = new Scale(randomScaleName, randomMode, randomTonic);
-    visualScale = new vScale(scale, 50, 50, 300, 100);
+    visualScale = new vScale2(50, 10, 100, true); // Assurez-vous que circleMode est bien passé ici
 }
 
 function draw() {
@@ -24,26 +23,22 @@ function draw() {
 }
 
 function mousePressed() {
-    console.log("Mouse pressed at:", mouseX, mouseY); // Debug
-    visualScale.handleMousePressed(); // Appeler handleMousePressed pour gérer tous les cas
+    visualScale.mousePressed(); 
 }
 
 function mouseReleased() {
-    visualScale.stopDragging();
-    visualScale.stopResizing();
+    visualScale.mouseReleased();
 }
 
 function mouseDragged() {
-    if (visualScale.isDragging) {
-        visualScale.x = mouseX - visualScale.offsetX;
-        visualScale.y = mouseY - visualScale.offsetY;
-    } else if (visualScale.isResizing) {
-        let newWidth = mouseX - visualScale.x - visualScale.offsetX;
-        let newHeight = newWidth / visualScale.aspectRatio;
-        if (newHeight + visualScale.y <= windowHeight && newWidth + visualScale.x <= windowWidth) {
-            visualScale.width = newWidth;
-            visualScale.height = newHeight;
-        }
-    }
+    visualScale.mouseDragged();
+}
+
+function mouseClicked() {
+    visualScale.mouseClicked();
+}
+
+function doubleClicked() {
+    visualScale.doubleClicked();
 }
 

@@ -1,47 +1,12 @@
-class Bubble {
-    constructor(x, y, radius, labels, hue, isInScale, labelType) {
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
-        this.labels = labels; // labels est maintenant un tableau
-        this.currentLabelIndex = 0; // Index du label actuel
-        this.hue = hue;
-        this.isInScale = isInScale;
-        this.labelType = labelType; // Ajouter la propriété labelType
-    }
-
-    draw() {
-        push();
-        if (this.isInScale) {
-            fill(this.hue, 10, 10); // Utiliser la teinte pour le remplissage si la note est dans la gamme
-        } else {
-            noFill(); // Pas de remplissage si la note est hors gamme
-        }
-        stroke(255); // Contour blanc
-        ellipse(this.x, this.y, this.radius * 2, this.radius * 2); // Dessiner le cercle
-        fill(255);
-        noStroke();
-        textAlign(CENTER, CENTER);
-        text(this.labels[this.labelType] || '', this.x, this.y); // Utiliser labelType pour choisir le label
-        pop();
-    }
-
-    cycleLabel() {
-        this.currentLabelIndex = (this.currentLabelIndex + 1) % this.labels.length;
-    }
-
-    isMouseOver() {
-        return dist(mouseX, mouseY, this.x, this.y) < this.radius;
-    }
-}
-
 class vScale {
-    constructor(scale, x, y, width = 200, height = 100) {
+    constructor(scale, x, y, width = 200, height = 100, circular = false) {
         this.scale = scale;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+        this.centerX = width / 2; // Centre du rectangle
+        this.centerY = height / 2; // Centre du rectangle
         this.isDragging = false;
         this.isResizing = false;
         this.isDraggingNote = false;
@@ -51,42 +16,70 @@ class vScale {
         this.offsetY = 0;
         this.aspectRatio = width / height;
         this.labelType = 0; // Par défaut, afficher les intervalles
+        this.circular = circular; // Affichage circulaire ou en ligne
         this.notes = this.createNotes(); // Initialiser les notes
         this.isLabelHovered = false;
         this.isModeHovered = false;
+        this.hotzones = {
+            frame: { x: 0, y: 0, w: 0, h: 0 },
+            move: { x: 0, y: 0, r: 0 },
+            resize: { x: 0, y: 0, w: 0, h: 0 },
+            label: { x: 0, y: 0, w: 0, h: 0 },
+            mode: { x: 0, y: 0, w: 0, h: 0 }
+        };
     }
 
     createNotes() {
+        return this.circular ? this.createCircularNotes() : this.createLinearNotes();
+    }
+
+    createLinearNotes() {
         let notes = [];
-        let radius = this.height / 4; // Initialiser les diamètres des bulles à la moitié de la hauteur du rectangle
+        let circleRadius = this.height / 4; // Le diamètre est la moitié de la hauteur du cadre
         for (let i = 0; i < 12; i++) {
+            let { x, y } = this.getLinearCoordinates(i, circleRadius);
             let labels = [
                 this.scale.labels.degrees[i] || '', 
                 this.scale.labels.intervals[i] || '', 
                 this.scale.labels.notes[i] || ''
             ]; // Assurez-vous que les 3 labels sont inclus et non null
             let isInScale = this.scale.intervals.semitones.includes(i);
-            let x = this.x + radius + i * (2 * radius);
-            let y = this.y + this.height / 2;
-            notes.push(new Bubble(x, y, radius, labels, i, isInScale, this.labelType));
+            notes.push(new Bubble(x, y, circleRadius, labels, i, isInScale, this.labelType));
+        }
+        return notes;
+    }
+
+    createCircularNotes() {
+        let notes = [];
+        let circleRadius = this.height / 4; // Le diamètre est la moitié de la hauteur du cadre
+        for (let i = 0; i < 12; i++) {
+            let { x, y } = this.getCircularCoordinates(i, this.centerX, this.centerY, this.height / 2);
+            let labels = [
+                this.scale.labels.degrees[i] || '', 
+                this.scale.labels.intervals[i] || '', 
+                this.scale.labels.notes[i] || ''
+            ]; // Assurez-vous que les 3 labels sont inclus et non null
+            let isInScale = this.scale.intervals.semitones.includes(i);
+            notes.push(new Bubble(x, y, circleRadius, labels, i, isInScale, this.labelType));
         }
         return notes;
     }
 
     updateNotes() {
-        let radius = this.height / 4; // Initialiser les diamètres des bulles à la moitié de la hauteur du rectangle
+        let circleRadius = this.height / 4; // Le diamètre est la moitié de la hauteur du cadre
         for (let i = 0; i < 12; i++) {
-            let x = this.x + radius + i * (2 * radius);
-            let y = this.y + this.height / 2;
+            let { x, y } = this.circular 
+                ? this.getCircularCoordinates(i, this.centerX, this.centerY, this.height / 2)
+                : this.getLinearCoordinates(i, circleRadius);
             let labels = [
                 this.scale.labels.degrees[i] || '', 
                 this.scale.labels.intervals[i] || '', 
                 this.scale.labels.notes[i] || ''
             ]; // Assurez-vous que les 3 labels sont inclus et non null
             let isInScale = this.scale.intervals.semitones.includes(i);
-            this.notes[i].x = x;
-            this.notes[i].y = y;
-            this.notes[i].radius = radius;
+            this.notes[i].x = x + this.x; // Mettre à jour la position x de la bulle
+            this.notes[i].y = y + this.y; // Mettre à jour la position y de la bulle
+            this.notes[i].radius = circleRadius;
             this.notes[i].labels = labels;
             this.notes[i].isInScale = isInScale;
             this.notes[i].labelType = this.labelType; // Mettre à jour labelType
@@ -94,12 +87,27 @@ class vScale {
     }
 
     draw() {
+        this.updateHotzones();
         push();
         translate(this.x, this.y); // Déplacer le système de coordonnées à l'emplacement de l'objet vScale
         // Afficher le nom de la gamme avec la tonique
         textSize(16 * (this.width / 200));
         fill(255); // Texte en blanc
         noStroke();
+        this.drawScaleName();
+        this.drawScaleMode();
+
+        // Afficher les notes en demi-tons dans un tableau horizontal ou circulaire
+        this.drawSemitoneTable();
+
+        // Dessiner les icônes de déplacement et de redimensionnement
+        this.drawHotzones(); 
+        this.drawIcons();
+        pop();
+    }
+
+    drawScaleName() {
+        push();
         if (this.scale.name && this.scale.key) {
             text(`${this.scale.key} ${this.scale.name}`, 10 * (this.width / 200), 20 * (this.height / 100));
             if (this.isLabelHovered) {
@@ -107,8 +115,11 @@ class vScale {
                 line(10 * (this.width / 200), 22 * (this.height / 100), 10 * (this.width / 200) + textWidth(`${this.scale.key} ${this.scale.name}`), 22 * (this.height / 100));
             }
         }
+        pop();
+    }
 
-        // Afficher le mode à droite du rectangle
+    drawScaleMode() {
+        push();
         if (this.scale.mode) {
             text(this.scale.mode, this.width - 10 * (this.width / 200), 20 * (this.height / 100));
             if (this.isModeHovered) {
@@ -116,12 +127,6 @@ class vScale {
                 line(this.width - 10 * (this.width / 200), 22 * (this.height / 100), this.width - 10 * (this.width / 200) + textWidth(this.scale.mode), 22 * (this.height / 100));
             }
         }
-
-        // Afficher les notes en demi-tons dans un tableau horizontal
-        this.drawSemitoneTable();
-
-        // Dessiner les icônes de déplacement et de redimensionnement
-        this.drawIcons();
         pop();
     }
 
@@ -130,54 +135,70 @@ class vScale {
         let textSizeValue = this.height / 3;
         textSize(textSizeValue);
         noStroke();
-        let spacing = this.height / 2; // Espacer les notes de la moitié de la hauteur du cadre
-        let radius = this.height / 4; // Rayon du cercle
+        let circleRadius = this.height / 4;
+        let scaleRadius = this.height ;
         textAlign(CENTER, CENTER); // Centrer le texte
         colorMode(HSB, 12); // Utiliser le mode de couleur HSB avec une plage de teinte de 0 à 12
         for (let i = 0; i < 12; i++) {
             let interval = this.scale.labels.intervals[i] || '';
-            let x = radius + i * spacing; // Déplacer pour que le premier cercle touche le bord gauche du cadre
-            let y = this.height / 2;
+            let x, y;
+            if (this.circular) {
+                ({ x, y } = this.getCircularCoordinates(i, this.centerX, this.centerY, scaleRadius));
+            } else {
+                ({ x, y } = this.getLinearCoordinates(i, circleRadius));
+            }
             let isInScale = this.scale.intervals.semitones.includes(i);
-            let bubble = new Bubble(x, y, radius, [interval, this.scale.labels.degrees[i] || '', this.scale.labels.notes[i] || ''], i, isInScale, this.labelType); // Ajouter plusieurs labels
+            let bubble = new Bubble(x, y, circleRadius, [interval, this.scale.labels.degrees[i] || '', this.scale.labels.notes[i] || ''], i, isInScale, this.labelType); // Ajouter plusieurs labels
             bubble.draw();
         }
         pop();
     }
 
+    getLinearCoordinates(i, size) {
+        let x =  size + i * (2 * size); // Ajuster l'espacement des bulles
+        let y =  this.height / 2;
+        return { x, y };
+    }
+
+    getCircularCoordinates(i, x, y, size) {
+        const angle = TWO_PI * (i / 12) - HALF_PI; // Ajuster l'angle pour que la tonique soit en haut
+        x = x + cos(angle) * size;
+        y = y + sin(angle) * size;
+        return { x, y };
+    }
+
+    drawInteractiveFrame() {
+        push();
+        stroke(255);
+        noFill();
+        let offset = 12.5 * (this.width / 200);
+        line(offset, 0, this.width, 0);
+        line(this.width, 0, this.width, this.height);
+        line(this.width, this.height, 0, this.height);
+        line(0, this.height, 0, offset);
+
+        this.drawMoveIcon();
+        this.drawResizeIcon();
+        pop();
+    }
+
     drawIcons() {
-        if (this.isMouseOver() || this.isMouseOverMoveIcon()) {
-            push();
-            // Dessiner le pourtour blanc avec des lignes, en évitant le cercle du bouton et sans fermer le rectangle
-            stroke(255);
-            noFill();
-            let offset = 12.5 * (this.width / 200);
-            line(offset, 0, this.width, 0);
-            line(this.width, 0, this.width, this.height);
-            line(this.width, this.height, 0, this.height);
-            line(0, this.height, 0, offset);
-
-            // Icône de déplacement (coin supérieur gauche)
-            this.drawMoveIcon();
-
-            // Icône de redimensionnement (coin inférieur droit)
-            this.drawResizeIcon();
-            pop();
+        if (this.isFrameHovered() || this.isMouseOverMoveIcon()) {
+            this.drawInteractiveFrame();
         }
     }
 
     drawMoveIcon() {
         push();
-        // Dessiner une icône de déplacement avec des triangles évidés pointant vers l'extérieur, entourés d'un cercle
         noFill();
         stroke(255);
-        let size = 25 * (this.width / 200); // Utiliser la largeur pour la proportion
+        let size = 25 * (this.width / 200);
         ellipse(0, 0, size, size);
 
         fill(255);
         noStroke();
-        let triangleSize = 3 * (this.width / 200); // Utiliser la largeur pour la proportion
-        let triangleHeight = 6 * (this.width / 200); // Utiliser la largeur pour la proportion
+        let triangleSize = 3 * (this.width / 200);
+        let triangleHeight = 6 * (this.width / 200);
         triangle(-triangleSize, -triangleHeight, 0, -triangleHeight * 2, triangleSize, -triangleHeight);
         triangle(-triangleSize, triangleHeight, 0, triangleHeight * 2, triangleSize, triangleHeight);
         triangle(-triangleHeight, -triangleSize, -triangleHeight * 2, 0, -triangleHeight, triangleSize);
@@ -187,12 +208,74 @@ class vScale {
 
     drawResizeIcon() {
         push();
-        // Dessiner un triangle rectangle dans le coin inférieur droit, sans toucher le bord
         fill(255);
         noStroke();
         let size = 10 * (this.width / 200);
         triangle(this.width - size - 5, this.height - 5, this.width - 5, this.height - 5, this.width - 5, this.height - size - 5);
         pop();
+    }
+
+    drawHotzones() {
+        push();
+        stroke(255, 0, 0);
+        noFill();
+
+        // Cadre
+        rect(this.hotzones.frame.x, this.hotzones.frame.y, this.hotzones.frame.w, this.hotzones.frame.h);
+
+        // Déplacement
+        ellipse(this.hotzones.move.x, this.hotzones.move.y, this.hotzones.move.r * 2);
+
+        // Redimensionnement
+        rect(this.hotzones.resize.x, this.hotzones.resize.y, this.hotzones.resize.w, this.hotzones.resize.h);
+
+        // Label
+        rect(this.hotzones.label.x, this.hotzones.label.y, this.hotzones.label.w, this.hotzones.label.h);
+
+        // Mode
+        rect(this.hotzones.mode.x, this.hotzones.mode.y, this.hotzones.mode.w, this.hotzones.mode.h);
+
+        pop();
+    }
+
+    updateHotzones() {
+        // Cadre
+        this.hotzones.frame.x = 0;
+        this.hotzones.frame.y = 0;
+        this.hotzones.frame.w = this.width;
+        this.hotzones.frame.h = this.height;
+
+        // Icône de déplacement
+        this.hotzones.move.x = 0;
+        this.hotzones.move.y = 0;
+        this.hotzones.move.r = 12.5 * (this.width / 200);
+
+        // Icône de redimensionnement
+        let resizeSize = 10 * (this.width / 200);
+        this.hotzones.resize.x = this.width - resizeSize - 5;
+        this.hotzones.resize.y = this.height - resizeSize - 5;
+        this.hotzones.resize.w = resizeSize;
+        this.hotzones.resize.h = resizeSize;
+
+        // Label
+        const labelX = 10 * (this.width / 200);
+        const labelY = 20 * (this.height / 100);
+        const labelW = textWidth(`${this.scale.key} ${this.scale.name}`);
+        const labelH = textAscent() + textDescent();
+        this.hotzones.label.x = labelX;
+        this.hotzones.label.y = labelY - labelH;
+        this.hotzones.label.w = labelW;
+        this.hotzones.label.h = labelH;
+
+        // Mode
+        const modeX = this.width - 10 * (this.width / 200);
+        const modeY = 20 * (this.height / 100);
+        const modeW = textWidth(this.scale.mode);
+        const modeH = textAscent() + textDescent();
+        this.hotzones.mode.x = modeX;
+        this.hotzones.mode.y = modeY - modeH;
+        this.hotzones.mode.w = modeW;
+        this.hotzones.mode.h = modeH;
     }
 
     isMouseOver() {
@@ -223,6 +306,19 @@ class vScale {
         const modeHeight = textAscent() + textDescent(); // Utiliser textHeight pour la zone sensible
         return mouseX > modeX && mouseX < modeX + modeWidth &&
                mouseY > modeY - modeHeight && mouseY < modeY + modeHeight;
+    }
+
+    isMouseOverNote() {
+        return this.notes.some(note => note.isMouseOver());
+    }
+
+    isFrameHovered() {
+        return (
+            mouseX > this.x &&
+            mouseX < this.x + this.width &&
+            mouseY > this.y &&
+            mouseY < this.y + this.height
+        );
     }
 
     startDragging() {
@@ -265,7 +361,7 @@ class vScale {
                 this.scale.modifyNote(semitoneIndex, alteration); // Utiliser l'indice en demi-ton correspondant
                 this.updateNotes();
                 console.log(`Note released: Index ${this.draggedNoteIndex}`); // Log l'indice de la note relâchée
-                console.log(mouseX > this.dragStartX ? "droite" : "gauche"); // Afficher droite ou gauche selon la position de départ du clic
+                console.log((mouseX > this.dragStartX)&&(mouseX != this.dragStartX) ? "droite" : "gauche"); // Afficher droite ou gauche selon la position de départ du clic
             }
         }
         this.isDraggingNote = false;
@@ -273,10 +369,8 @@ class vScale {
     }
 
     handleMousePressed() {
-        console.log("handleMousePressed called"); // Debug
-        if (this.isMouseOverMoveIcon()) {
-            console.log("Move icon clicked in handleMousePressed"); // Debug
-            this.startDragging();
+         if (this.isMouseOverMoveIcon()) {
+             this.startDragging();
         }
         if (this.isMouseOverResizeIcon()) {
             console.log("Resize icon clicked in handleMousePressed"); // Debug
@@ -290,7 +384,7 @@ class vScale {
             console.log("Mode clicked in handleMousePressed"); // Debug
             this.cycleMode();
         }
-        if (this.notes.some(note => dist(mouseX, mouseY, note.x, note.y) < note.radius)) {
+        if (this.isMouseOverNote()) {
             console.log("Note clicked in handleMousePressed"); // Debug
             this.startDraggingNote();
         }
@@ -345,6 +439,7 @@ class vScale {
         if (this.isDragging) {
             this.x = mouseX - this.offsetX;
             this.y = mouseY - this.offsetY;
+            this.updateNotes(); // Mettre à jour les notes après déplacement
         }
 
         if (this.isResizing) {
@@ -353,12 +448,14 @@ class vScale {
             if (newHeight + this.y <= windowHeight && newWidth + this.x <= windowWidth) {
                 this.width = newWidth;
                 this.height = newHeight;
+                this.centerX = this.width / 2; // Mettre à jour le centre du rectangle
+                this.centerY = this.height / 2; // Mettre à jour le centre du rectangle
+                this.updateNotes(); // Mettre à jour les notes après redimensionnement
             }
         }
 
         // Mettre à jour l'état de survol des labels
         this.isLabelHovered = this.isMouseOverLabel();
         this.isModeHovered = this.isMouseOverMode();
-        this.updateNotes(); // Mettre à jour les notes
     }
 }

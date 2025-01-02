@@ -7,9 +7,21 @@ class Scale {
         this.mode = mode;
         this.scaleType = SCALES_NAMES.indexOf(scaleName); // Définir scaleType
         this.key = key;
+        this.modeName = this.getModeName(scaleName, mode); // Définir modeName
         
         this.createFullScale(scaleName, mode, key);
+    }
 
+    getModeName(scaleName, mode) {
+        const scaleIndex = SCALES_NAMES.indexOf(scaleName);
+        if (scaleIndex === -1) {
+            throw new Error('Nom de gamme invalide');
+        }
+        if (typeof mode === 'number') {
+            return MODES[scaleIndex][mode - 1];
+        } else {
+            return mode;
+        }
     }
 
     createFullScale(scaleName, mode) {
@@ -112,6 +124,7 @@ class Scale {
         this.name = detectedScale.name;
         this.mode = detectedScale.mode;
         this.scaleType = SCALES_NAMES.indexOf(this.name); // Mettre à jour scaleType
+        this.modeName = this.getModeName(this.name, this.mode); // Mettre à jour modeName
     }
 
     detectScale(semitones) {
@@ -312,4 +325,3 @@ class Scale {
         return noteLabels;
     }
 }
-
