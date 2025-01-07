@@ -317,12 +317,18 @@ function doubleClicked() {
 }
 
 function keyPressed() {
-    if (keyCode === 32) {
+    if (keyCode === 32) { // Barre d'espace
         for (let bubble of visualScale.bubbles) {
             bubble.toggleVisualMode();
         }
         visualScale.visualMode = visualScale.bubbles[0].visualMode;
     }
 
-
-}
+    // changement de type de label pour les bulles touchee entree
+    if (keyCode === ENTER) { // Entree
+        for (let bubble of visualScale.bubbles) {
+            bubble.toggleLabelType();
+        }
+        visualScale.labelType = visualScale.bubbles[0].labelType;
+    }
+}  

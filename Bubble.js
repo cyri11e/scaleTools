@@ -8,7 +8,7 @@ class Bubble {
         this.hue = hue;
         this.isInScale = isInScale;
         this.visualMode = visualMode; // Mode visuel par défaut
-        this.labelType = labelType; // Ajouter la propriété labelType
+        this.labelType = labelType; // degre interval note chord
     }
 
     draw() {
@@ -85,6 +85,10 @@ class Bubble {
 
     toggleVisualMode() {      
         this.visualMode = this.visualMode === 'color' ? 'invisible' : 'color';
+    }
+
+    toggleLabelType() {
+        this.labelType = (this.labelType + 1) % LABEL_TYPES.length;
     }
 }
 
