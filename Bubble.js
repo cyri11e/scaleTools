@@ -28,25 +28,27 @@ class Bubble {
                 strokeWeight(3); // Augmenter l'épaisseur du contour si la bulle est survolée
             }
             ellipse(this.x, this.y, this.radius * 2, this.radius * 2); // Dessiner le cercle
-            colorMode(RGB); // Revenir au mode RVB
+            
+            
+
             noStroke();
             textSize(this.radius * 1.3)
-
-
-            fill(50);
-            text(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
+            fill(4, 0, 2, this.isMouseOver() ? 0 : 12)
+            
+            if ( this.isInScale )
+                displayNoteLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
             
             if ( this.isInScale ) {
-                fill(255);  
-            } else {    
-                fill(100);  
+                fill(12);  
+            } else {               
+                fill(0, 0, 12, this.isMouseOver() ? 10 : 3)  
             }
 
-            text(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+            displayNoteLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
             noFill();
         } else if (this.visualMode === 'invisible') {
+            // MODE INVISIBLE
             // effet glow
-                  // Ajouter un effet de glow
             drawingContext.shadowBlur = 10;
             drawingContext.shadowColor = 'rgba(255, 255, 255, 0.7)';
    
@@ -62,13 +64,11 @@ class Bubble {
             if ( this.isInScale ) { 
                 fill(255)
                 textSize(this.radius * 1.3)
-                text(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
-            } else {
-                
+                displayNoteLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
+            } else {       
                 fill(0, 0, 12, this.isMouseOver() ? 12 : 0.5)
                 textSize(this.radius )
-
-                text(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
+                displayNoteLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
             }        
         }
         pop();
@@ -82,3 +82,28 @@ class Bubble {
         return dist(mouseX, mouseY, this.x, this.y) < this.radius;
     }
 }
+
+function displayNoteLabel(note, x, y) {
+    let size = textSize();
+    push();
+    textAlign(CENTER, CENTER);
+    if (note.includes('##')) note = note.replace('##', '𝄪');
+    if (note.includes('#')) note = note.replace('#', '♯');
+    if (note.includes('bb')) note = note.replace('bb', '𝄫');
+    if (note.includes('b')) note = note.replace('b', '♭');
+
+    if (note.length > 2) {
+      text(note[0], x - 0.3 * size, y);
+      textSize(0.6 * size);
+      text(note[1] + note[2], x + 0.3 * size, y - 0.3 * size);
+    } else if (note.length == 2) {
+      text(note[1], x + 0.1 * size, y);
+      textSize(0.8 * size);
+      text(note[0], x - 0.3 * size, y - 0.2 * size);
+    } else {
+      textSize(size);
+      text(note[0], x, y);
+    }
+
+    pop();
+  }
