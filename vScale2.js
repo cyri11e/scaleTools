@@ -59,6 +59,7 @@ class vScale2 {
         this.minSize = 50; // Taille minimum pour le redimensionnement
         this.labels = [];
         this.bubbles = [];
+        this.visualMode = visualMode; // Assurez-vous que visualMode est bien défini ici
         this.circleMode = circleMode; // Assurez-vous que circleMode est bien défini ici
         this.bubbleAnimation = new CustomAnimation(500); // Utiliser CustomAnimation pour les bulles
         this.labelAnimation = new CustomAnimation(500); // Utiliser CustomAnimation pour les labels
@@ -90,7 +91,7 @@ class vScale2 {
         for (let i = 0; i < 12; i++) {           
             const { bubbleX, bubbleY, labels } = this.getCoordinates(bubbleSpacing, i);
             const isInScale = this.scale.intervals.semitones.includes(i);
-            this.bubbles.push(new Bubble(bubbleX, bubbleY, bubbleRadius, labels, i, isInScale, 'degree'));
+            this.bubbles.push(new Bubble(bubbleX, bubbleY, bubbleRadius, labels, i, isInScale, 'degree', this.visualMode));
         }
     }
 
@@ -313,4 +314,15 @@ function mouseClicked() {
 
 function doubleClicked() {
     visualScale.doubleClicked();
+}
+
+function keyPressed() {
+    if (keyCode === 32) {
+        for (let bubble of visualScale.bubbles) {
+            bubble.toggleVisualMode();
+        }
+        visualScale.visualMode = visualScale.bubbles[0].visualMode;
+    }
+
+
 }

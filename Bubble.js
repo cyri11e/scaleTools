@@ -7,7 +7,7 @@ class Bubble {
         this.currentLabelIndex = 0; // Index du label actuel
         this.hue = hue;
         this.isInScale = isInScale;
-        this.visualMode = 'invisible'; // Mode visuel par défaut
+        this.visualMode = visualMode; // Mode visuel par défaut
         this.labelType = labelType; // Ajouter la propriété labelType
     }
 
@@ -19,7 +19,7 @@ class Bubble {
 
         if (this.visualMode === 'color') {
             if (this.isInScale) {
-                fill(this.hue, 10, 10); // Utiliser la teinte pour le remplissage si la note est dans la gamme
+                fill(this.hue, this.isMouseOver() ? 12 : 8,this.isMouseOver() ? 12 :8); // Utiliser la teinte pour le remplissage si la note est dans la gamme
             } else {
                 noFill(); // Pas de remplissage si la note est hors gamme
             }
@@ -27,6 +27,7 @@ class Bubble {
             if (this.isMouseOver()) {
                 strokeWeight(3); // Augmenter l'épaisseur du contour si la bulle est survolée
             }
+
             ellipse(this.x, this.y, this.radius * 2, this.radius * 2); // Dessiner le cercle
             
             
@@ -36,7 +37,7 @@ class Bubble {
             fill(4, 0, 2, this.isMouseOver() ? 0 : 12)
             
             if ( this.isInScale )
-                displayNoteLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
+                displayDegreLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
             
             if ( this.isInScale ) {
                 fill(12);  
@@ -44,7 +45,7 @@ class Bubble {
                 fill(0, 0, 12, this.isMouseOver() ? 10 : 3)  
             }
 
-            displayNoteLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+            displayDegreLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
             noFill();
         } else if (this.visualMode === 'invisible') {
             // MODE INVISIBLE
@@ -62,13 +63,13 @@ class Bubble {
             
             noStroke()
             if ( this.isInScale ) { 
-                fill(255)
+                fill(0, 0, 12, this.isMouseOver() ? 12 : 10)
                 textSize(this.radius * 1.3)
-                displayNoteLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
+                displayDegreLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
             } else {       
                 fill(0, 0, 12, this.isMouseOver() ? 12 : 0.5)
                 textSize(this.radius )
-                displayNoteLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
+                displayDegreLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
             }        
         }
         pop();
@@ -81,9 +82,13 @@ class Bubble {
     isMouseOver() {
         return dist(mouseX, mouseY, this.x, this.y) < this.radius;
     }
+
+    toggleVisualMode() {      
+        this.visualMode = this.visualMode === 'color' ? 'invisible' : 'color';
+    }
 }
 
-function displayNoteLabel(note, x, y) {
+function displayDegreLabel(note, x, y) {
     let size = textSize();
     push();
     textAlign(CENTER, CENTER);
@@ -100,6 +105,31 @@ function displayNoteLabel(note, x, y) {
       text(note[1], x + 0.1 * size, y);
       textSize(0.8 * size);
       text(note[0], x - 0.3 * size, y - 0.2 * size);
+    } else {
+      textSize(size);
+      text(note[0], x, y);
+    }
+
+    pop();
+  }
+
+  function displayNoteLabel(note, x, y) {
+    let size = textSize();
+    push();
+
+    if (note.includes('##')) note = note.replace('##', '𝄪');
+    if (note.includes('#')) note = note.replace('#', '♯');
+    if (note.includes('bb')) note = note.replace('bb', '𝄫');
+    if (note.includes('b')) note = note.replace('b', '♭');
+
+    if (note.length > 2) {
+      text(note[0], x - 0.3 * size, y);
+      textSize(0.6 * size);
+      text(note[1] + note[2], x + 0.3 * size, y - 0.3 * size);
+    } else if (note.length == 2) {
+      text(note[0], x - 0.1 * size, y);
+      textSize(0.6 * size);
+      text(note[1], x + 0.3 * size, y - 0.2 * size);
     } else {
       textSize(size);
       text(note[0], x, y);
