@@ -102,3 +102,4 @@ const FULL_NOTES = {
 };
 
 const LABEL_TYPES = ['interval', 'degree', 'chord', 'note'];
+const VISUAL_MODES = ['color', 'invisible'];

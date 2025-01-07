@@ -13,7 +13,7 @@ function setup() {
         randomTonic = random(Object.keys(FULL_NOTES));
     }
 
-    visualScale = new vScale2(50, 10, 100, true); // Assurez-vous que circleMode est bien passé ici
+    visualScale = new vScale2(50, 100, 100, true); // Assurez-vous que circleMode est bien passé ici
 }
 
 function draw() {

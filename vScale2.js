@@ -45,7 +45,7 @@ class Label {
 }
 
 class vScale2 {
-    constructor(x = 50, y = 50, size = 100, circleMode = true) {
+    constructor(x = 50, y = 50, size = 100, circleMode = true, visualMode = 'color') {
         this.x = x;
         this.y = y; 
         this.height = size; 
