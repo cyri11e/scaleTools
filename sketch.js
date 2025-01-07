@@ -14,6 +14,7 @@ function setup() {
     }
 
     visualScale = new vScale2(50, 100, 100, true); // Assurez-vous que circleMode est bien passé ici
+    initializeMidi(visualScale);
 }
 
 function draw() {

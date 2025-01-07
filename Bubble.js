@@ -7,44 +7,50 @@ class Bubble {
         this.currentLabelIndex = 0; // Index du label actuel
         this.hue = hue;
         this.isInScale = isInScale;
+        this.isHighlighted = false;
+        this.isPlaying = false;
         this.visualMode = visualMode; // Mode visuel par défaut
         this.labelType = labelType; // degre interval note chord
     }
 
     draw() {
         push();
+        this.isHighlighted = this.isMouseOver() || this.isPlaying;
+
         colorMode(HSB, 12); // Utiliser le mode HSB       
         let shadowOffset = this.radius / 20;
         textAlign(CENTER, CENTER);
 
         if (this.visualMode === 'color') {
             if (this.isInScale) {
-                fill(this.hue, this.isMouseOver() ? 12 : 8,this.isMouseOver() ? 12 :8); // Utiliser la teinte pour le remplissage si la note est dans la gamme
+                fill(this.hue, this.isHighlighted ? 12 : 8, this.isHighlighted ? 12 : 8); // Utiliser la teinte pour le remplissage si la note est dans la gamme
             } else {
                 noFill(); // Pas de remplissage si la note est hors gamme
             }
-            stroke(255); // Contour blanc
-            if (this.isMouseOver()) {
-                strokeWeight(3); // Augmenter l'épaisseur du contour si la bulle est survolée
-            }
+            stroke(this.hue , 12 , 12 ); // Contour blanc
+            strokeWeight(Math.round(this.radius / (this.isHighlighted ? 5 : 30) )); // Augmenter l'épaisseur du contour si la bulle est survolée
 
             ellipse(this.x, this.y, this.radius * 2, this.radius * 2); // Dessiner le cercle
             
-            
-
             noStroke();
-            textSize(this.radius * 1.3)
-            fill(4, 0, 2, this.isMouseOver() ? 0 : 12)
+            textSize(this.radius * 1.3);
+            fill(4, 0, 2, this.isHighlighted ? 0 : 12);
             
-            if ( this.isInScale )
+            if (this.isInScale)
                 displayDegreLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
-            
-            if ( this.isInScale ) {
+                if (this.labels.note != undefined){
+                    fill(12)
+
+                    textSize(this.radius * 0.5);
+                    displayNoteLabel(this.labels.note || '', this.x , this.y + this.radius * 0.8  ); // Utiliser labelType pour choisir le label
+                }
+ 
+            if (this.isInScale) {
                 fill(12);  
             } else {               
-                fill(0, 0, 12, this.isMouseOver() ? 10 : 3)  
+                fill(0, 0, 12, this.isHighlighted ? 10 : 3);  
             }
-
+            textSize(this.radius * 1.3);
             displayDegreLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
             noFill();
         } else if (this.visualMode === 'invisible') {
@@ -53,23 +59,25 @@ class Bubble {
             drawingContext.shadowBlur = 10;
             drawingContext.shadowColor = 'rgba(255, 255, 255, 0.7)';
    
-            if (this.isMouseOver()) {
-                strokeWeight(3); // Augmenter l'épaisseur du contour si la bulle est survolée
-            }          
-
+            strokeWeight(this.radius / (this.isHighlighted ? 5 : 50)); // Augmenter l'épaisseur du contour si la bulle est survolée
+          
             noFill();
             stroke(255);
             ellipse(this.x, this.y, this.radius * 2, this.radius * 2);
             
-            noStroke()
-            if ( this.isInScale ) { 
-                fill(0, 0, 12, this.isMouseOver() ? 12 : 10)
-                textSize(this.radius * 1.3)
-                displayDegreLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
+            noStroke();
+            if (this.isInScale) { 
+                fill(0, 0, 12, this.isHighlighted ? 12 : 10);
+                textSize(this.radius * 1.3);
+                displayDegreLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+                if (this.labels.note) {
+                    textSize(this.radius * 0.5);
+                    displayNoteLabel(this.labels.note || '', this.x , this.y + this.radius * 0.8 ); // Utiliser labelType pour choisir le label
+                }
             } else {       
-                fill(0, 0, 12, this.isMouseOver() ? 12 : 0.5)
-                textSize(this.radius )
-                displayDegreLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
+                fill(0, 0, 12, this.isHighlighted ? 12 : 0.5);
+                textSize(this.radius);
+                displayDegreLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
             }        
         }
         pop();
@@ -91,6 +99,17 @@ class Bubble {
         this.labelType = (this.labelType + 1) % LABEL_TYPES.length;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 function displayDegreLabel(note, x, y) {
     let size = textSize();
