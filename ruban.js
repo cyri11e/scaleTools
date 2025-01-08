@@ -1,13 +1,14 @@
 class Ruban {
-  constructor(midiNote, label, startX, startY, endY, width) {
+  constructor(midiNote, label, startX, startY, endY, width, key) {
     this.midiNote = midiNote;
     this.label = label.replace(/[0-9]/g, ''); // Enlever le numéro d'octave
     this.startX = startX;
     this.startY = startY;
     this.endY = endY;
-    this.width = width;
+    this.width = width * 0.9;
     this.isPlaying = true;
     this.speed = 2; // Vitesse constante
+    this.key = key;
   }
 
   update() {
@@ -29,7 +30,8 @@ class Ruban {
       push();
       colorMode(HSB, 12, 12, 12); // Utiliser le mode de couleur HSB
       noFill();
-      stroke(this.midiNote %12, 12 ,12); // Couleur blanche
+      let color = (this.midiNote - FULL_NOTES[this.key]) %12
+      stroke(color, 12 ,12); // Couleur blanche
       strokeWeight(this.width / 10); // Augmenter l'épaisseur du trait
 
       // Ajouter un effet de glow
@@ -40,20 +42,20 @@ class Ruban {
 
       // Afficher le label si le ruban est assez long
       if ((this.endY - this.startY > 40)&(this.isPlaying)) {
-        fill(this.midiNote %12, 12 ,12); 
+        fill(color, 12 ,12); 
         noStroke();
         textSize(this.width); // Augmenter la taille du texte
         textAlign(CENTER, TOP);
         this.displayNoteLabel(this.label, this.startX + this.width / 2, this.startY + this.width / 10);
       }
       if (!this.isPlaying) {
-        fill(this.midiNote %12, 12 ,12);
+        fill(color, 12 ,12);
         noStroke();
         textSize(this.width); // Augmenter la taille du texte
         textAlign(CENTER, TOP);
         this.displayNoteLabel(this.label, this.startX + this.width / 2, this.endY - this.width );
       }
-
+ 
       pop();
     }
   }

@@ -21,6 +21,12 @@ class Piano {
     }
   }
 
+  // Nouvelle fonction pour évaluer isScale
+  evaluateScale(scaleDegrees) {
+    for (let key of this.keys) {
+      key.isScale = scaleDegrees.includes(key.noteLabel);
+    }
+  }
 
   setKeyCount(count) {
     this.keyCount = count;
@@ -43,7 +49,7 @@ class Piano {
           this.key,
           this.s,
           false,
-          true,
+          false,
           'X'
         )
       );
@@ -97,7 +103,7 @@ class Piano {
   createRuban(key) {
     let rubanWidth = key.isWhiteKey ? key.w : key.w * 0.8; // Rubans plus fins pour les touches noires
     if (key.isPlayed) { 
-      let ruban = new Ruban(key.midiNote, key.midiNoteLabel, key.keyX, key.y, key.y, rubanWidth);
+      let ruban = new Ruban(key.midiNote, key.midiNoteLabel, key.keyX, key.y, key.y, rubanWidth, this.key );
       this.rubans.push(ruban);
     }
   }

@@ -2,7 +2,7 @@
 // <script src="const.js"></script> doit être ajouté dans index.html
 
 class Scale {
-    constructor(scaleName, mode = 1, key = 'E') {
+    constructor(scaleName, mode = 1, key = 'C') {
         this.name = scaleName;
         this.mode = mode;
         this.scaleType = SCALES_NAMES.indexOf(scaleName); // Définir scaleType

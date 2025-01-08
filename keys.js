@@ -42,50 +42,53 @@ class Key {
     this.chromaNote = this.getChromaNote()  
   }
 
-  setColors(chroma){
-    let hue = (chroma - this.chromaKey +12 ) % 12
+  setColors(chroma) {
+    let hue = (chroma - this.chromaKey + 12) % 12;
     // touches noires
-    if ([1,3,6,8,10].includes(chroma%12)){
-      if (this.colorMode=='invisible'){
-        this.scaleColor = 'lime' 
-        this.playedColor = 'white'
-        } else  if ((this.colorMode=='BW')||(this.colorMode=='color')){
-        this.scaleColor = 'rgb(22,21,21)'  
-        this.playedColor = 'cyan'
+    if ([1, 3, 6, 8, 10].includes(chroma % 12)) {
+      if (this.colorMode == 'invisible') {
+        this.scaleColor = 'lime';
+        this.playedColor = 'white';
+      } else if (this.colorMode == 'BW' || this.colorMode == 'color') {
+        this.scaleColor = 'rgb(22,21,21)';
+        this.playedColor = 'cyan';
+      } else {
+        this.scaleColor = color(hue, 8, 6);
+        this.playedColor = color(hue, 12, 12);
       }
-      else {
-        this.scaleColor = color(hue, 8, 6)  
-        this.playedColor = color(hue,8, 6)  
+    } else {
+      // touches blanches
+      if (this.colorMode == 'invisible') {
+        this.scaleColor = 'lime';
+        this.playedColor = 'white';
+      } else if (this.colorMode == 'BW') {
+        this.scaleColor = 'rgb(249,249,238)';
+        this.playedColor = 'cyan';
+      } else {
+        this.scaleColor = color(hue, 3, 12);
+        this.playedColor = color(hue, 12, 12);
       }
-   } else { 
-   // touches blanches
-   if (this.colorMode=='invisible'){
-    this.scaleColor = 'lime' 
-    this.playedColor = 'white'
-    } else if (this.colorMode=='BW'){
-       this.scaleColor = 'rgb(249,249,238)' 
-       this.playedColor = 'cyan'
-     }
-     else {
-       this.scaleColor = color(hue , 8, 10)
-       this.playedColor = color(hue, 8, 10)
-     }     
-   } 
-   if (this.isScale) {
-      if (this.colorMode=='invisible')
-        stroke('white')   
+    }
+    if (this.isScale) {
+      if (this.colorMode == 'invisible')
+        stroke(12,12,12); // Stroke blanc pour le mode invisible
       else
-        stroke('black') // Stroke noir pour les touches de l'échelle
-     this.color= this.scaleColor      
-   } 
-   if (this.isPlayed){
-     stroke('white')
-     this.color =this.playedColor
-   } 
-   if (this.isSelected) {
-     stroke('black')
-     this.color = this.selectedColor
-   }
+        stroke(0,12,12); // Stroke noir pour les touches de l'échelle
+      this.color = this.scaleColor;
+
+    }
+    if (this.isPlayed) {      
+      strokeWeight(3);
+      stroke('white'); // Stroke blanc pour les touches jouées
+      this.color = this.playedColor;
+    } else {  
+      this.color = this.scaleColor;
+    }
+
+    if (this.isSelected) {
+      stroke('black'); // Stroke noir pour les touches sélectionnées
+      this.color = this.selectedColor;
+    }
   }
 
   getNoteChroma(note){
@@ -156,6 +159,10 @@ class Key {
 
     if (!this.isWhiteKey) {
      // this.displayReflection(0.05); // Exemple d'épaisseur de liseré
+    }
+
+    if (this.isScale) {
+      ellipse(this.x, this.y, 50, 50)
     }
     pop();
   } 
