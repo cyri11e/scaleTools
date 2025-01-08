@@ -14,10 +14,10 @@ class Piano {
   // aux objets graphiques ket et ruban
 
   // on recois la tonalite et on transmete au touche pour ajuste les label et couleurs
-  setKey(key) {
-    this.key = key;
+  setKey(note) {
+    this.key = note;
     for (let key of this.keys) {
-      key.setKey(key);
+      key.setKey(note);
     }
   }
 

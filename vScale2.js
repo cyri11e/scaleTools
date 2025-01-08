@@ -343,7 +343,7 @@ class vScale2 {
     // Ajouter des méthodes si nécessaire
     noteOn(midiNote) {
         for (let bubble of this.bubbles) {
-          if (bubble.hue === (( midiNote - 4 ) % 12)) {
+          if (bubble.hue === (( midiNote  - FULL_NOTES[this.scale.key] ) % 12)) {
             bubble.isPlaying = true;
           }
         }
@@ -351,7 +351,7 @@ class vScale2 {
     
       noteOff(midiNote) {
         for (let bubble of this.bubbles) {
-          if (bubble.hue === ((midiNote - 4 )  % 12)) {
+          if (bubble.hue === ((midiNote  - FULL_NOTES[this.scale.key])  % 12)) {
             bubble.isPlaying = false;
           }
         }

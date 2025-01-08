@@ -43,7 +43,7 @@ class Key {
   }
 
   setColors(chroma){
-    let hue = (chroma - this.chromaKey) % 12
+    let hue = (chroma - this.chromaKey +12 ) % 12
     // touches noires
     if ([1,3,6,8,10].includes(chroma%12)){
       if (this.colorMode=='invisible'){
