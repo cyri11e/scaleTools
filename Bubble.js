@@ -1,5 +1,5 @@
 class Bubble {
-    constructor(x, y, radius, labels, hue, isInScale, labelType, visualMode = 'color', showOffScale = true) {
+    constructor(x, y, radius, labels, hue, isInScale, labelType = 'degree', visualMode = 'color', showOffScale = true) {
         this.x = x;
         this.y = y;
         this.radius = radius;
@@ -18,7 +18,7 @@ class Bubble {
         this.isHighlighted = this.isMouseOver() || this.isPlaying;
 
         colorMode(HSB, 12); // Utiliser le mode HSB       
-        let shadowOffset = this.radius / 20;
+        let shadowOffset = this.radius / 30;
         textAlign(CENTER, CENTER);
 
         if (this.visualMode === 'color') {
@@ -36,22 +36,38 @@ class Bubble {
             textSize(this.radius * 1.3);
             fill(4, 0, 2, this.isHighlighted ? 0 : 12);
             
-            if (this.isInScale)
-                displayDegreLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
-                if (this.labels.note != undefined){
-                    fill(12)
+            // ombre     
+            if (this.isInScale) {
+                drawingContext.shadowBlur = 10; // Apply blur effect
+                drawingContext.shadowColor = 'black'; // Shadow color
+               
+                if (this.labelType === 'degree')
+                    displayDegreLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
+                else if (this.labelType === 'note')
+                    displayNoteLabel(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
+                else    
+                    text(this.labels[this.labelType] || '', this.x + shadowOffset, this.y + shadowOffset); // Utiliser labelType pour choisir le label
 
-                    textSize(this.radius * 0.5);
-                    displayNoteLabel(this.labels.note || '', this.x , this.y + this.radius * 0.8  ); // Utiliser labelType pour choisir le label
-                }
- 
+                if (this.labels.note != undefined){
+                        fill(12)
+                        textSize(this.radius * 0.5);
+                        displayNoteLabel(this.labels.note || '', this.x , this.y + this.radius * 0.8  ); // Utiliser labelType pour choisir le label
+                    }
+            }
+
             if (this.isInScale) {
                 fill(12);  
             } else {               
                 fill(0, 0, 12, this.isHighlighted ? 10 : 3);  
             }
             textSize(this.radius * 1.3);
-            displayDegreLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+            if (this.labelType === 'degree')
+                displayDegreLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+            else if (this.labelType === 'note')
+                displayNoteLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+            else 
+                text(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+            
             noFill();
         } else if (this.visualMode === 'invisible') {
             // MODE INVISIBLE
@@ -69,15 +85,27 @@ class Bubble {
             if (this.isInScale) { 
                 fill(0, 0, 12, this.isHighlighted ? 12 : 10);
                 textSize(this.radius * 1.3);
-                displayDegreLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
-                if (this.labels.note) {
+                if (this.labelType === 'degree')
+                    displayDegreLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+                else if (this.labelType === 'note')
+                    displayNoteLabel(this .labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+                else 
+                    text(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+                
+            if (this.labels.note) {
                     textSize(this.radius * 0.5);
                     displayNoteLabel(this.labels.note || '', this.x , this.y + this.radius * 0.8 ); // Utiliser labelType pour choisir le label
                 }
+
             } else {       
                 fill(0, 0, 12, this.isHighlighted ? 12 : 0.5);
                 textSize(this.radius);
-                displayDegreLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+                if (this.labelType === 'degree')
+                    displayDegreLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+                else if (this.labelType === 'note')
+                    displayNoteLabel(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
+                else 
+                    text(this.labels[this.labelType] || '', this.x - shadowOffset, this.y - shadowOffset); // Utiliser labelType pour choisir le label
             }        
         }
         pop();
@@ -96,7 +124,8 @@ class Bubble {
     }
 
     toggleLabelType() {
-        this.labelType = (this.labelType + 1) % LABEL_TYPES.length;
+        const currentIndex = LABEL_TYPES.indexOf(this.labelType);
+        this.labelType = LABEL_TYPES[(currentIndex + 1) % LABEL_TYPES.length];
     }
 }
 

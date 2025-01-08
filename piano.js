@@ -153,6 +153,18 @@ class Piano {
     }
   }
 
+  getPianoNote() {
+    let note
+    for (let key of this.keys) {  
+      note  = key.doubleClicked();
+      if (note) {
+        console.log(note);
+        break;
+      }  
+    }
+    return note
+  }
+
   // CLAVIER
 
   keyPressed() {

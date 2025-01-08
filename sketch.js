@@ -65,9 +65,16 @@ function mouseClicked() {
 }
 
 function doubleClicked() {
+
+    //recupere la note double cliquée    
+    for (const piano of pianos) {     
+        // mettre a jour la gamme visuelle
+        if (piano.getPianoNote())
+            visualScale.updateKey(piano.getPianoNote());
+    }
+
     visualScale.doubleClicked();
-    for (const piano of pianos)
-        piano.doubleClicked()
+
 }
 
 function windowResized() {

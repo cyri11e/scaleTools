@@ -5,7 +5,7 @@ class Label {
         this.y = y;
         this.size = size;
         this.align = align;
-        this.labelType = labelType; // Ajouter la propriété labelType
+        this.labelType = labelType; // pour les inscription a l interieur scale mode key
     }
 
     isHovered() {
@@ -77,6 +77,7 @@ class vScale2 {
             ];
         } else {
             this.labels = [
+                new Label(this.scale.key, this.x - 5, this.y - labelSize * 3, labelSize * 3, LEFT, 'key'),               
                 new Label(this.scale.name, this.x + 5, this.y + 5, labelSize, LEFT, 'scale'),
                 new Label(this.scale.modeName, this.x + this.width - 5, this.y + 5, labelSize, RIGHT, 'mode')
             ];
@@ -119,6 +120,12 @@ class vScale2 {
         };
         return { bubbleX, bubbleY, labels };
     }
+    updateKey(note) {
+        this.scale = new Scale(this.scale.name, this.scale.mode, note);
+        this.createLabels();
+        this.createBubbles();
+    }
+
 
     update() {
         if (this.dragging) {
@@ -260,9 +267,11 @@ class vScale2 {
             return { x: bubbleX, y: bubbleY };
         });
         const endLabelPositions = this.circleMode ? [
+            { x: this.x + this.width / 2, y: this.y + this.height / 2 - this.height / 6 * 4, align: CENTER },
             { x: this.x + this.width / 2, y: this.y + this.height / 2 - this.height / 6, align: CENTER },
             { x: this.x + this.width / 2, y: this.y + this.height / 2, align: CENTER }
         ] : [
+            { x: this.x - 5, y: this.y - this.height / 6 * 3, align: LEFT },
             { x: this.x + 5, y: this.y + 5, align: LEFT },
             { x: this.x + this.width - 5, y: this.y + 5, align: RIGHT }
         ];
@@ -290,7 +299,7 @@ class vScale2 {
     nextScale() {
         const currentIndex = SCALES_NAMES.indexOf(this.scale.name);
         const nextIndex = (currentIndex + 1) % SCALES_NAMES.length;
-        this.scale = new Scale(SCALES_NAMES[nextIndex]);
+        this.scale = new Scale(SCALES_NAMES[nextIndex], 1, this.scale.key);
         this.createLabels(); // Mettre à jour les labels
         this.createBubbles(); // Mettre à jour les bulles
         console.log('Nouvelle gamme:', this.scale.name, 'Mode:', this.scale.modeName);
@@ -300,7 +309,7 @@ class vScale2 {
         const currentScaleIndex = SCALES_NAMES.indexOf(this.scale.name);
         const currentModeIndex = MODES[currentScaleIndex].indexOf(this.scale.modeName);
         const nextModeIndex = (currentModeIndex + 1) % MODES[currentScaleIndex].length;
-        this.scale = new Scale(this.scale.name, MODES[currentScaleIndex][nextModeIndex]);
+        this.scale = new Scale(this.scale.name, MODES[currentScaleIndex][nextModeIndex], this.scale.key);
         this.createLabels(); // Mettre à jour les labels
         this.createBubbles(); // Mettre à jour les bulles
         console.log('Nouveau mode:', this.scale.modeName);
@@ -349,19 +358,19 @@ function doubleClicked() {
     visualScale.doubleClicked();
 }
 
-function keyPressed() {
-    if (keyCode === 32) { // Barre d'espace
-        for (let bubble of visualScale.bubbles) {
-            bubble.toggleVisualMode();
-        }
-        visualScale.visualMode = visualScale.bubbles[0].visualMode;
-    }
+// function keyPressed() {
+//     if (keyCode === 32) { // Barre d'espace
+//         for (let bubble of visualScale.bubbles) {
+//             bubble.toggleVisualMode();
+//         }
+//         visualScale.visualMode = visualScale.bubbles[0].visualMode;
+//     }
 
-    // changement de type de label pour les bulles touchee entree
-    if (keyCode === ENTER) { // Entree
-        for (let bubble of visualScale.bubbles) {
-            bubble.toggleLabelType();
-        }
-        visualScale.labelType = visualScale.bubbles[0].labelType;
-    }
-}  
+//     // changement de type de label pour les bulles touchee entree
+//     if (keyCode === ENTER) { // Entree
+//         for (let bubble of visualScale.bubbles) {
+//             bubble.toggleLabelType();
+//         }
+//         visualScale.labelType = visualScale.bubbles[0].labelType;
+//     }
+// }
