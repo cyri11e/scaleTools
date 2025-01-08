@@ -5,12 +5,22 @@ class Piano {
     this.updateKeyCount(keyCount);
     this.selectedNotes = [];
     this.rubans = [];
+    this.key = 'C'
   }
 
   // piano n 'est pas un objet d'affichage 
   // mais un conteneur de touches et de rubans
   // il transmet les événements de souris et de clavier
   // aux objets graphiques ket et ruban
+
+  // on recois la tonalite et on transmete au touche pour ajuste les label et couleurs
+  setKey(key) {
+    this.key = key;
+    for (let key of this.keys) {
+      key.setKey(key);
+    }
+  }
+
 
   setKeyCount(count) {
     this.keyCount = count;
@@ -30,7 +40,7 @@ class Piano {
           this.startNote,
           keyType,
           this.x,
-          this.y,
+          this.key,
           this.s,
           false,
           true,

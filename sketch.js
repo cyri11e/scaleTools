@@ -69,8 +69,13 @@ function doubleClicked() {
     //recupere la note double cliquée    
     for (const piano of pianos) {     
         // mettre a jour la gamme visuelle
-        if (piano.getPianoNote())
-            visualScale.updateKey(piano.getPianoNote());
+        let key = piano.getPianoNote()
+        if (key) {
+            visualScale.updateKey(key);
+            piano.setKey(key)
+            break;
+        }    
+
     }
 
     visualScale.doubleClicked();

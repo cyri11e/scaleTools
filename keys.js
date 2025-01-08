@@ -1,9 +1,10 @@
 class Key {
-  constructor(index, startNote, keyType, originX, originY, size, isPlayed, isScale, label) {
+  constructor(index, startNote, keyType, originX, key = 'C', size, isPlayed, isScale, label) {
     this.index = index;
     this.startNote = startNote;
     this.keyType = keyType;
     this.setNote();
+    this.setKey(key);
     this.size = size;
     this.w = this.size;
     this.h = this.size * 6;
@@ -16,7 +17,7 @@ class Key {
     this.label = label;
     this.thickness = 1;
     this.isWhiteKey = true;
-
+    this.key = key;
     this.frameColor = 'green';
     this.scaleColor = 'white';
     this.scaleColorWhite = 'rgb(255,255,255)';
@@ -26,6 +27,11 @@ class Key {
     this.colorModes = ['BW', 'color', 'fullcolor', 'invisible'];
     this.colorMode = 'BW';
   }
+
+  setKey(key) {  
+    this.key = key;
+    this.chromaKey = FULL_NOTES[this.key]; // Set the chromatic degree of the note from the FULL_NOTES table
+  }  
 
   setNote(){
     this.startNoteChroma = this.getNoteChroma(this.startNote)
@@ -37,6 +43,7 @@ class Key {
   }
 
   setColors(chroma){
+    let hue = (chroma - this.chromaKey) % 12
     // touches noires
     if ([1,3,6,8,10].includes(chroma%12)){
       if (this.colorMode=='invisible'){
@@ -47,8 +54,8 @@ class Key {
         this.playedColor = 'cyan'
       }
       else {
-        this.scaleColor = color((chroma%12) , 8, 6)  
-        this.playedColor = color((chroma%12) , 8, 6)  
+        this.scaleColor = color(hue, 8, 6)  
+        this.playedColor = color(hue,8, 6)  
       }
    } else { 
    // touches blanches
@@ -60,8 +67,8 @@ class Key {
        this.playedColor = 'cyan'
      }
      else {
-       this.scaleColor = color((chroma%12) , 8, 10)
-       this.playedColor = color((chroma%12) , 8, 10)
+       this.scaleColor = color(hue , 8, 10)
+       this.playedColor = color(hue, 8, 10)
      }     
    } 
    if (this.isScale) {
