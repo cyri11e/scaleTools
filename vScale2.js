@@ -71,6 +71,7 @@ class vScale2 {
         const labelSize = this.height / 6;
         if (this.circleMode) {
             this.labels = [
+                new Label(this.scale.key, this.x + this.width / 2, this.y + this.height / 2 -  labelSize * 4 , labelSize * 3 , CENTER, 'key'),
                 new Label(this.scale.name, this.x + this.width / 2, this.y + this.height / 2 - labelSize, labelSize, CENTER, 'scale'),
                 new Label(this.scale.modeName, this.x + this.width / 2, this.y + this.height / 2, labelSize, CENTER, 'mode')
             ];
@@ -229,7 +230,7 @@ class vScale2 {
     }
 
     mouseClicked() {
-        console.log('Clic');
+
         this.labels.forEach(label => {
             if (label.isHovered()) {
                 if (label.labelType === 'scale') {
@@ -321,6 +322,23 @@ class vScale2 {
           }
         }
       }
+
+      keyPressed() {
+        if (keyCode === 32) { // Barre d'espace
+            for (let bubble of visualScale.bubbles) {
+                bubble.toggleVisualMode();
+            }
+            visualScale.visualMode = visualScale.bubbles[0].visualMode;
+        }
+    
+        // changement de type de label pour les bulles touchee entree
+        if (keyCode === ENTER) { // Entree
+            for (let bubble of visualScale.bubbles) {
+                bubble.toggleLabelType();
+            }
+            visualScale.labelType = visualScale.bubbles[0].labelType;
+        }
+    }  
 }
 
 function mouseClicked() {
