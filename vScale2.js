@@ -164,7 +164,7 @@ class vScale2 {
         }
 
         // Reapply the current label type and visual mode
-        this.labels.forEach(label => label.labelType = currentLabelType);
+        //this.labels.forEach(label => label.labelType = currentLabelType);
         this.bubbles.forEach(bubble => bubble.visualMode = currentVisualMode);
 
         this.bubbleAnimation.update(); // Mettre à jour l'animation des bulles
