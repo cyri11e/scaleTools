@@ -97,6 +97,23 @@ class vScale2 {
         }
     }
 
+    updateBubbles() {
+        const bubbleRadius = this.height / 4;
+        const bubbleSpacing = this.width / 6;
+        const bubbleY = this.y + this.height / 2;
+
+        this.bubbles.forEach((bubble, i) => {
+            const { bubbleX, bubbleY, labels } = this.getCoordinates(bubbleSpacing, i);
+            const isInScale = this.scale.intervals.semitones.includes(i);
+            bubble.x = bubbleX;
+            bubble.y = bubbleY;
+            bubble.radius = bubbleRadius;
+            bubble.labels = labels;
+            bubble.isInScale = isInScale;
+            bubble.visualMode = this.visualMode;
+        });
+    }
+
     getCoordinates(bubbleSpacing, i) {
         let bubbleX, bubbleY;
         let labels;
@@ -128,11 +145,14 @@ class vScale2 {
 
 
     update() {
+        const currentLabelType = this.labels.length > 0 ? this.labels[0].labelType : 'degree';
+        const currentVisualMode = this.visualMode;
+
         if (this.dragging) {
             this.x = mouseX + this.offsetX;
             this.y = mouseY + this.offsetY;
             this.createLabels(); // Mettre à jour les labels lors du déplacement
-            this.createBubbles(); // Mettre à jour les bulles lors du déplacement
+            this.updateBubbles(); // Mettre à jour les bulles lors du déplacement
         }
         if (this.resizing) {
             const newWidth = Math.max(mouseX - this.x, this.minSize * this.aspectRatio);
@@ -140,8 +160,13 @@ class vScale2 {
             this.width = newWidth;
             this.height = newHeight;
             this.createLabels(); // Mettre à jour les labels lors du redimensionnement
-            this.createBubbles(); // Mettre à jour les bulles lors du redimensionnement
+            this.updateBubbles(); // Mettre à jour les bulles lors du redimensionnement
         }
+
+        // Reapply the current label type and visual mode
+        this.labels.forEach(label => label.labelType = currentLabelType);
+        this.bubbles.forEach(bubble => bubble.visualMode = currentVisualMode);
+
         this.bubbleAnimation.update(); // Mettre à jour l'animation des bulles
         this.labelAnimation.update(); // Mettre à jour l'animation des labels
     }

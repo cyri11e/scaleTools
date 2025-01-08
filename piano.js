@@ -158,7 +158,7 @@ class Piano {
     for (let key of this.keys) {  
       note  = key.doubleClicked();
       if (note) {
-        console.log(note);
+        //console.log(note);
         break;
       }  
     }
