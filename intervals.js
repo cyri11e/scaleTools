@@ -5,7 +5,7 @@ class Intervals {
     this.direction = direction;
     this.number = number;
     this.nature = nature;
-    this.shortName = `${number}${nature}`;
+    this.shortName = `${direction === 'descending' ? '-' : ''}${number}${nature}`;
   }
 
   getName() {
@@ -33,9 +33,16 @@ class Intervals {
   }
 
   invert() {
-    const invertedSemitones = 12 - this.semitones;
+    const invertedSemitones = -this.semitones;
     const invertedDirection = this.direction === 'ascending' ? 'descending' : 'ascending';
-    return Intervals.getFromSemitone(invertedSemitones).find(interval => interval.direction === invertedDirection);
+    return new Intervals(this.name, invertedSemitones, invertedDirection, this.number, this.nature);
+  }
+
+  complement() {
+    const complementNumber = 9 - this.number;
+    const complementNature = this.nature === 'M' ? 'm' : this.nature === 'm' ? 'M' : this.nature;
+    const complementInterval = Intervals.get().find(interval => interval.number === complementNumber && interval.nature === complementNature);
+    return complementInterval ? new Intervals(complementInterval.name, complementInterval.semitones, this.direction, complementNumber, complementNature) : null;
   }
 
   static get() {
@@ -45,8 +52,8 @@ class Intervals {
         const natureObj = INTERVAL_NATURES.find(n => n.label === nature);
         if (natureObj) {
           let offset = natureObj.offset;
-          if (!type.natures.includes('P') && (nature === 'A' || nature === 'd')) {
-            offset *= 2;
+          if (!type.natures.includes('P') && ( nature === 'd')) {
+            offset = offset * 2;
           }
           const semitones = type.chroma + offset;
           if (semitones >= 0 && semitones <= 12) {
@@ -59,25 +66,10 @@ class Intervals {
   }
 
   static getFromSemitone(semitone) {
-    let direction = 'ascending';
-    let shortNamePrefix = '';
-    if (semitone < 0) {
-      direction = 'descending';
-      shortNamePrefix = '-';
-    }
-    return this.get().map(interval => {
-      if (interval.semitones === semitone) {
-        return new Intervals(
-          interval.name,
-          interval.semitones,
-          direction,
-          interval.number,
-          interval.nature,
-          `${shortNamePrefix}${interval.shortName}`
-        );
-      }
-      return interval;
-    }).filter(interval => interval.direction === direction);
+    const direction = semitone < 0 ? 'descending' : 'ascending';
+    const absSemitone = Math.abs(semitone);
+    const intervals = this.get().filter(interval => interval.semitones === absSemitone);
+    return intervals.map(interval => new Intervals(interval.name, semitone, direction, interval.number, interval.nature));
   }
 
   static getFromDegree(degree) {
@@ -107,11 +99,11 @@ class Intervals {
 
 const INTERVAL_TYPES = [
   { name: 'Unison', number: 1, chroma: 0, natures: ['P'] },
-  { name: 'Second', number: 2, chroma: 2, natures: ['m', 'M', 'A'] },
+  { name: 'Second', number: 2, chroma: 2, natures: ['m', 'M', 'A', 'd'] },
   { name: 'Third', number: 3, chroma: 4, natures: ['m', 'M', 'A', 'd'] },
   { name: 'Fourth', number: 4, chroma: 5, natures: ['P', 'A', 'd'] },
   { name: 'Fifth', number: 5, chroma: 7, natures: ['P', 'A', 'd'] },
-  { name: 'Sixth', number: 6, chroma: 9, natures: ['m', 'M', 'A'] },
+  { name: 'Sixth', number: 6, chroma: 9, natures: ['m', 'M', 'A', 'd'] },
   { name: 'Seventh', number: 7, chroma: 11, natures: ['m', 'M', 'A', 'd'] },
   { name: 'Octave', number: 8, chroma: 12, natures: ['P'] }
 ];
@@ -126,8 +118,13 @@ const INTERVAL_NATURES = [
   { name: 'Diminished', label: 'd', offset: -1 }
 ];
 
-// Inversion test
-const interval = new Intervals('Perfect Fourth', 5, 'ascending', 4, 'P');
-console.log('Before inversion:', interval);
-console.log('After inversion:', interval.invert()); // Should return an interval with 7 semitones, 'descending', number 5, and nature 'P'
+function testComplement() {
+  const intervals = Intervals.get();
+  intervals.forEach(interval => {
+    const complementInterval = interval.complement();
+    console.log(`Original: ${interval.getShortName()}, Complement: ${complementInterval.getShortName()}`);
+  });
+}
 
+// Appelez la fonction de test
+testComplement();
